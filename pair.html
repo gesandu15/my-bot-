@@ -2,10 +2,110 @@
 <html lang="si">
 <head>
   <meta charset="UTF-8">
-  <title>M.R.Gesa Pair</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LAKIYA MINI BOT</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background: black;
+      font-family: 'Orbitron', sans-serif;
+      overflow: hidden;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      z-index: 2;
+    }
+
+    .logo {
+      width: 60px;
+      height: 60px;
+      background: #ffeb3b;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 10px;
+      box-shadow: 0 0 15px #ffeb3b, 0 0 30px #fbc02d;
+      animation: logoGlow 2s infinite ease-in-out;
+    }
+
+    @keyframes logoGlow {
+      0%, 100% { box-shadow: 0 0 15px #ffeb3b, 0 0 30px #fbc02d; }
+      50% { box-shadow: 0 0 25px #ffeb3b, 0 0 40px #fbc02d; }
+    }
+
+    .box {
+      width: 360px;
+      padding: 30px;
+      background: linear-gradient(145deg, #1a1a1a, #2c2c2c);
+      border: 2px solid #ffeb3b;
+      border-radius: 15px;
+      text-align: center;
+      box-shadow: 0 0 30px rgba(255, 235, 59, 0.5);
+      position: relative;
+      animation: pulse 3s infinite ease-in-out, float 4s infinite ease-in-out;
+      transition: transform 0.3s ease;
+    }
+
+    .box:hover {
+      transform: translateY(-10px) scale(1.02);
+      box-shadow: 0 0 40px rgba(255, 235, 59, 0.8);
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 30px rgba(255, 235, 59, 0.5); }
+      50% { transform: scale(1.015); box-shadow: 0 0 40px rgba(255, 235, 59, 0.7); }
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+
+    @keyframes bounceIn {
+      0% { opacity: 0; transform: translateY(-20px); }
+      60% { opacity: 1; transform: translateY(5px); }
+      100% { transform: translateY(0); }
+    }
+
+    h1 {
+      color: #ffeb3b;
+      animation: bounceIn 1s ease-out;
+      font-size: 1.8em;
+      margin: 10px 0;
+    }
+
+    .result {
+      margin-top: 20px;
+      font-size: 1.2rem;
+      background: rgba(255, 255, 255, 0.15);
+      padding: 15px;
+      border-radius: 10px;
+      min-height: 50px;
+      max-width: 100%;
+      color: #fff;
+      user-select: text;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+    }
+  </style>
 </head>
 <body>
-  <h1>🔗 Pair System Active!</h1>
-  <p>මෙතන QR එක හෝ pairing info දාන්න පුලුවන්.</p>
+  <div class="container">
+    <div class="logo">
+      <i class="fas fa-robot" style="color: #000; font-size: 30px;"></i>
+    </div>
+    <div class="box">
+      <h1>LAKIYA MINI BOT</h1>
+      <div class="result" id="resultBox">QR / Bot Pair Page Ready</div>
+    </div>
+  </div>
 </body>
 </html>
