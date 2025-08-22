@@ -1,40 +1,43 @@
-const makeWASocket = require("@whiskeysockets/baileys").default;
-const { useMultiFileAuthState } = require("@whiskeysockets/baileys");
+const mega = require("megajs");
+const auth = {
+  email: "Gesandusanmira@gmail.com",
+  password: "Thevi!@#123",
+  userAgent:
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/12.246",
+};
 
-async function startBot() {
-  const { state, saveCreds } = await useMultiFileAuthState("session");
-  const sock = makeWASocket({ auth: state });
+const upload = (data, name) => {
+  return new Promise((resolve, reject) => {
+    const storage = new mega.Storage(auth);
 
-  sock.ev.on("creds.update", saveCreds);
+    // Wait for storage to be ready
+    storage.on("ready", () => {
+      console.log("Storage is ready. Proceeding with upload.");
 
-  sock.ev.on("connection.update", async (update) => {
-    const { connection } = update;
-    if (connection === "open") {
-      console.log("🤖 M.R.Gesa Bot Connected!");
+      const uploadStream = storage.upload({ name, allowUploadBuffering: true });
 
-      // Target number
-      const targets = ["94784525290@s.whatsapp.net"]; // ඔබේ WhatsApp number
+      uploadStream.on("complete", (file) => {
+        file.link((err, url) => {
+          if (err) {
+            reject(err);
+          } else {
+            storage.close();
+            resolve(url);
+          }
+        });
+      });
 
-      // Message content
-      const msg = {
-        image: { 
-          url: "https://github.com/gesandu1111/ugjv/blob/main/Create%20a%20branding%20ba.png?raw=true" 
-        },
-        caption: `*📡 Smart Tech News Channel*  
-✨ නවතම තාක්ෂණික පුවත්, AI tools, App updates, Tips & Tricks — හැමදෙයක්ම එකම තැනක!
+      uploadStream.on("error", (err) => {
+        reject(err);
+      });
 
-🔗 Join now:  
-https://whatsapp.com/channel/0029Vb5dXIrBKfi7XjLb8g1S
+      data.pipe(uploadStream);
+    });
 
-🔋 Stay updated. Stay smart.  
-Powered by *M.R.Gesa ⚡*`
-      };
-
-      for (let jid of targets) {
-        await sock.sendMessage(jid, msg);
-      }
-    }
+    storage.on("error", (err) => {
+      reject(err);
+    });
   });
-}
+};
 
-module.exports = { startBot };
+module.exports = { upload };
