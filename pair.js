@@ -1,13 +1,11 @@
 const { default: makeWASocket, useMultiFileAuthState } = require('@whiskeysockets/baileys');
 
 async function pairSystem() {
-  console.log("🔗 Pair system loaded from pair.js!");
-
   const { state, saveCreds } = await useMultiFileAuthState('./auth_info');
 
   const sock = makeWASocket({
     auth: state,
-    printQRInTerminal: true,
+    printQRInTerminal: true, // terminal එකට print වෙනවා
   });
 
   sock.ev.on('connection.update', (update) => {
@@ -15,6 +13,8 @@ async function pairSystem() {
 
     if (qr) {
       console.log("📱 QR code එක terminal එකේ පෙන්වයි. WhatsApp app එකෙන් scan කරන්න.");
+      // 👉 මෙතැනින් UI එකට QR එක pass කරන්න
+      // උදා: save to file, emit via socket, or inject to HTML
     }
 
     if (connection === 'open') {
@@ -22,7 +22,7 @@ async function pairSystem() {
     }
 
     if (connection === 'close') {
-      console.log("❌ සම්බන්ධ වීම අසාර්ථකයි. නැවත උත්සාහ කරන්න.");
+      console.log("❌ සම්බන්ධ වීම අසාර්ථකයි.");
     }
   });
 
