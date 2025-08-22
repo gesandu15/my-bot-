@@ -1,83 +1,100 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="si">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>M.R.Gesa Bot Pairing</title>
-<style>
-  body {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
-    background: black;
-    font-family: 'Orbitron', sans-serif;
-    color: #fff;
-    flex-direction: column;
-    text-align: center;
-  }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>M.R.Gesa Bot Pairing</title>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background: black;
+      font-family: 'Orbitron', sans-serif;
+      color: #fff;
+      flex-direction: column;
+      text-align: center;
+    }
 
-  .logo {
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    overflow: hidden;
-    margin-bottom: 20px;
-    box-shadow: 0 0 20px #ffeb3b, 0 0 40px #fbc02d;
-  }
+    .logo {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      overflow: hidden;
+      margin-bottom: 20px;
+      box-shadow: 0 0 20px #ffeb3b, 0 0 40px #fbc02d;
+    }
 
-  .logo img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
+    .logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
 
-  h1 {
-    color: #ffeb3b;
-    margin-bottom: 10px;
-  }
+    h1 {
+      color: #ffeb3b;
+      margin-bottom: 10px;
+    }
 
-  .channel-link {
-    color: #00e5ff;
-    text-decoration: none;
-    font-size: 1.2rem;
-    margin-bottom: 20px;
-    display: inline-block;
-  }
+    .channel-link {
+      color: #00e5ff;
+      text-decoration: none;
+      font-size: 1.2rem;
+      margin-bottom: 20px;
+      display: inline-block;
+    }
 
-  #qrCode {
-    margin-top: 20px;
-    background: #fff;
-    padding: 20px;
-    border-radius: 15px;
-  }
+    #qrCode {
+      margin-top: 20px;
+      background: #fff;
+      padding: 20px;
+      border-radius: 15px;
+    }
 
-  p {
-    margin-top: 10px;
-    font-size: 0.9rem;
-    color: #ccc;
-  }
-</style>
+    #status {
+      margin-top: 10px;
+      font-size: 0.9rem;
+      color: #ccc;
+    }
+  </style>
 </head>
 <body>
 
-<div class="logo">
-  <img src="https://github.com/gesandu1111/ugjv/blob/main/Create%20a%20branding%20ba.png?raw=true" alt="M.R.Gesa Bot Logo">
-</div>
+  <div class="logo">
+    <img src="https://github.com/gesandu1111/ugjv/blob/main/Create%20a%20branding%20ba.png?raw=true" alt="M.R.Gesa Bot Logo">
+  </div>
 
-<h1>M.R.Gesa Bot</h1>
+  <h1>M.R.Gesa Bot</h1>
 
-<a href="https://whatsapp.com/channel/0029Vb5dXIrBKfi7XjLb8g1S" target="_blank" class="channel-link">
-📡 Smart Tech News Channel
-</a>
+  <a href="https://whatsapp.com/channel/0029Vb5dXIrBKfi7XjLb8g1S" target="_blank" class="channel-link">
+    📡 Smart Tech News Channel
+  </a>
 
-<p>Scan the QR below to pair your WhatsApp with M.R.Gesa Bot</p>
+  <p id="status">QR code එක load වෙමින් පවතී...</p>
 
-<div id="qrCode">
-  <!-- QR code from pair.js will render here -->
-</div>
+  <div id="qrCode">
+    <!-- QR code will appear here -->
+  </div>
 
-<script src="pair.js"></script>
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+  <script>
+    const socket = io("http://localhost:3001"); // match your backend port
+
+    socket.on("qr", (qrString) => {
+      const qrImage = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(qrString)}&size=250x250`;
+      document.getElementById("qrCode").innerHTML = `<img src="${qrImage}" alt="QR Code">`;
+      document.getElementById("status").innerText = "📱 QR code එක ලැබුණා! දැන් WhatsApp app එකෙන් scan කරන්න.";
+    });
+
+    socket.on("connected", () => {
+      document.getElementById("status").innerText = "✅ WhatsApp සම්බන්ධතාවය සාර්ථකයි!";
+    });
+
+    socket.on("error", () => {
+      document.getElementById("status").innerText = "⚠️ සම්බන්ධ වීම අසාර්ථකයි. නැවත උත්සාහ කරන්න.";
+    });
+  </script>
 </body>
 </html>
