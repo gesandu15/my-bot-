@@ -1,23 +1,20 @@
 const express = require("express");
-const { startBot } = require("./mega");
-const { pairSystem } = require("./pair");
-
 const app = express();
-const PORT = 3000;
+__path = process.cwd();
+const bodyParser = require("body-parser");
+const PORT = process.env.PORT || 8000;
+let code = require("./pair");
+require("events").EventEmitter.defaultMaxListeners = 500;
+app.use("/code", code);
 
-// Static files serve කරන්න
-app.use(express.static(__dirname));
-
-// Pair.html run කරන්න
-app.get("/", (req, res) => {
-  res.sendFile(__dirname + "/pair.html");
+app.use("/", async (req, res, next) => {
+  res.sendFile(__path + "/pair.html");
 });
 
-// Bot functions run කරන්න
-startBot();
-pairSystem();
-
-// Server start
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 app.listen(PORT, () => {
-  console.log(`🌐 Server running: http://localhost:${PORT}`);
+  console.log(`⏩ Server running on http://localhost:` + PORT);
 });
+
+module.exports = app;
