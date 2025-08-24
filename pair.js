@@ -13,6 +13,7 @@ const {
 } = require("@whiskeysockets/baileys");
 const { upload } = require("./mega");
 
+// Helper remove
 function removeFile(FilePath) {
   if (!fs.existsSync(FilePath)) return false;
   fs.rmSync(FilePath, { recursive: true, force: true });
@@ -20,8 +21,16 @@ function removeFile(FilePath) {
 
 router.get("/", async (req, res) => {
   let num = req.query.number;
+  if (!num) return res.send({ error: "Please provide a WhatsApp number" });
+
+  // clean & assign unique session folder for each number
+  num = num.replace(/[^0-9]/g, "");
+  const sessionFolder = `./sessions/${num}`;
+  if (!fs.existsSync(sessionFolder)) fs.mkdirSync(sessionFolder, { recursive: true });
+
   async function MRGesaPair() {
-    const { state, saveCreds } = await useMultiFileAuthState(`./session`);
+    const { state, saveCreds } = await useMultiFileAuthState(sessionFolder);
+
     try {
       let GesaWeb = makeWASocket({
         auth: {
@@ -38,48 +47,29 @@ router.get("/", async (req, res) => {
 
       if (!GesaWeb.authState.creds.registered) {
         await delay(1500);
-        num = num.replace(/[^0-9]/g, "");
         const code = await GesaWeb.requestPairingCode(num);
-        if (!res.headersSent) {
-          await res.send({ code });
-        }
+        if (!res.headersSent) return res.send({ code });
       }
 
       GesaWeb.ev.on("creds.update", saveCreds);
+
       GesaWeb.ev.on("connection.update", async (s) => {
         const { connection, lastDisconnect } = s;
+
         if (connection === "open") {
           try {
-            await delay(10000);
-            const auth_path = "./session/";
+            await delay(5000);
+            const credsPath = `${sessionFolder}/creds.json`;
             const user_jid = jidNormalizedUser(GesaWeb.user.id);
 
-            function randomMegaId(length = 6, numberLength = 4) {
-              const characters =
-                "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-              let result = "";
-              for (let i = 0; i < length; i++) {
-                result += characters.charAt(
-                  Math.floor(Math.random() * characters.length)
-                );
-              }
-              const number = Math.floor(
-                Math.random() * Math.pow(10, numberLength)
-              );
-              return `${result}${number}`;
-            }
-
             const mega_url = await upload(
-              fs.createReadStream(auth_path + "creds.json"),
-              `${randomMegaId()}.json`
+              fs.createReadStream(credsPath),
+              `${num}-session.json`
             );
 
-            const string_session = mega_url.replace(
-              "https://mega.nz/file/",
-              ""
-            );
+            const string_session = mega_url.replace("https://mega.nz/file/", "");
 
-            const sid = `*M.R.Gesa [Powerful WA BOT]*\n\n👉 ${string_session} 👈\n\n*This is your Session ID, copy it and paste into config.js*\n\n📞 Contact Owner: wa.me/94784525290\n\n🛑 *Do not share this code with anyone!* 🛑`;
+            const sid = `*M.R.Gesa [Powerful WA BOT]*\n\n👉 ${string_session} 👈\n\n*This is your Session ID for ${num}*\n\n🛑 *Do not share this code!*`;
 
             await GesaWeb.sendMessage(user_jid, {
               image: {
@@ -88,22 +78,13 @@ router.get("/", async (req, res) => {
               caption: sid,
             });
 
-            await GesaWeb.sendMessage(user_jid, {
-              text: string_session,
-            });
-
+            await GesaWeb.sendMessage(user_jid, { text: string_session });
           } catch (e) {
             exec("pm2 restart M.R.Gesa");
           }
-
-          await delay(100);
-          return await removeFile("./session");
-          process.exit(0);
         } else if (
           connection === "close" &&
-          lastDisconnect &&
-          lastDisconnect.error &&
-          lastDisconnect.error.output.statusCode !== 401
+          lastDisconnect?.error?.output?.statusCode !== 401
         ) {
           await delay(10000);
           MRGesaPair();
@@ -112,13 +93,11 @@ router.get("/", async (req, res) => {
     } catch (err) {
       exec("pm2 restart M.R.Gesa");
       console.log("service restarted");
-      MRGesaPair();
-      await removeFile("./session");
-      if (!res.headersSent) {
-        await res.send({ code: "Service Unavailable" });
-      }
+      await removeFile(sessionFolder);
+      if (!res.headersSent) res.send({ code: "Service Unavailable" });
     }
   }
+
   return await MRGesaPair();
 });
 
